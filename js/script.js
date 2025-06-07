@@ -52,7 +52,7 @@ const ipods = [
     ["5th Gen", 400, 900],
     ["6th Gen", 800, 2000],
     ["Touch 4th Gen", 1600, 8000],
-    ["Touch 6th Gen", 3200, 10]
+    ["Touch 6th Gen", 3200, 15000]
 ];
 
 
