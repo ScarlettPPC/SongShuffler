@@ -13,7 +13,7 @@ const ipodShop = document.querySelector('#ipod-shop');
 const headphoneShop = document.querySelector('#headphone-shop');
 const timerEl = document.querySelector('#timer');
 const miniIpodShop = document.querySelector('#miniipod-shop');
-const songProgress = document.querySelector('#song-progress');
+const songProgress = document.querySelectorAll('.song-progress');
 const pauseOverlay = document.querySelector('.pause-overlay');
 const pauseBtn = document.querySelector('#pause-game');
 const gameOverScreen = document.querySelector('.game-over');
@@ -47,12 +47,12 @@ let autosave = 0;
 
 // iPod models
 const ipods = [
-    ["3rd Gen", 100, 0],
-    ["4th Gen", 200, 300],
-    ["5th Gen", 400, 900],
-    ["6th Gen", 800, 2000],
-    ["Touch 4th Gen", 1600, 8000],
-    ["Touch 6th Gen", 3200, 15000]
+    ["3rd Gen", 100, 0], //100 0
+    ["4th Gen", 200, 1], //200 300
+    ["5th Gen", 400, 1], // 400, 900
+    ["6th Gen", 800, 1], // 800 2000
+    ["Touch 4th Gen", 1600, 1], //1600 8000
+    ["Touch 6th Gen", 3200, 1] // 3200 1500
 ];
 
 
@@ -78,11 +78,14 @@ const headphones = [
 
 
 const startSongProgress = (lengthStr) => {
-    clearInterval(songTimer);
-    const parts = lengthStr.split(':').map(n => parseInt(n));
-    songDuration = parts.length === 2 ? parts[0] * 60 + parts[1] : 180; // fallback to 180s
-    songElapsed = 0;
-    songProgress.style.width = '0%';
+    songProgress.forEach(progressBar => {
+        clearInterval(songTimer);
+        const parts = lengthStr.split(':').map(n => parseInt(n));
+        songDuration = parts.length === 2 ? parts[0] * 60 + parts[1] : 180; // fallback to 180s
+        songElapsed = 0;
+        progressBar.style.width = '0%';
+    });
+
 
 };
 
@@ -133,12 +136,15 @@ const newSong = () => {
     songTimer = setInterval(() => {
         songElapsed++;
         const percent = Math.min(100, (songElapsed / songDuration) * 100);
-        songProgress.style.width = percent + '%';
-        if (songElapsed >= songDuration) {
-            clearInterval(songTimer);
-            skipSong(); // simulate next song
-        }
-    }, 1000);    
+        songProgress.forEach(progressBar => {
+            progressBar.style.width = percent + '%';
+            if (songElapsed >= songDuration) {
+                clearInterval(songTimer);
+                skipSong(); // simulate next song
+            }
+        });
+
+    }, 1000);
 };
 
 
@@ -183,14 +189,14 @@ const renderShop = () => {
         btn.onclick = () => {
             if (points >= ipod[2]) {
                 points -= ipod[2];
+                ipodModels[ipodIndex]?.classList.add('hidden');
+                ipodModels[index]?.classList.remove('hidden');
                 ipodIndex = index;
                 battery = ipods[ipodIndex][1];
                 updateBars();
                 updateUpgradesUI();
                 renderShop();
                 shopModal.classList.add('hidden');
-                ipodModels[ipodIndex - 1]?.classList.add('hidden');
-                ipodModels[ipodIndex]?.classList.remove('hidden');
 
             }
         };
@@ -283,8 +289,7 @@ const loadGame = () => {
 
 const rechargeBattery = () => {
     //autosave logic
-    if (autosave == 1)
-    {
+    if (autosave == 1) {
         saveGame();
     }
 
@@ -384,32 +389,36 @@ const init = () => {
         isPaused = !isPaused;
         pauseOverlay.classList.toggle('hidden', !isPaused);
         pauseBtn.classList.toggle('selected', isPaused);
-    
+
         if (isPaused) {
             // Stop all tracked intervals
             timersPaused.forEach(clearInterval);
             timersPaused = [];
-    
+
             // Pause song timer
             clearInterval(songTimer);
         } else {
             restartAllTimers();
-    
+
             // Resume song timer
             songTimer = setInterval(() => {
                 songElapsed++;
                 const percent = Math.min(100, (songElapsed / songDuration) * 100);
-                songProgress.style.width = percent + '%';
-                if (songElapsed >= songDuration) {
-                    clearInterval(songTimer);
-                    skipSong(); // simulate next song
-                }
+                songProgress.forEach(progressBar => {
+                    progressBar.style.width = percent + '%';
+                    if (songElapsed >= songDuration) {
+                        clearInterval(songTimer);
+                        skipSong(); // simulate next song
+                    }
+                });
+
+
             }, 1000);
         }
     };
 
     autosaveBtn.onclick = () => {
-        switch(autosave) {
+        switch (autosave) {
             case 0:
                 autosave = 1;
                 autosaveBtn.classList.add('selected');
@@ -425,7 +434,7 @@ const init = () => {
 
     saevBtn.addEventListener('click', saveGame);
     loadBtn.addEventListener('click', loadGame);
-    
+
     rechargeBtn.addEventListener('click', rechargeBattery);
 
     document.querySelector('#open-shop').onclick = () => {
